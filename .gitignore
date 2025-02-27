@@ -40,3 +40,6 @@ yarn-error.log*
 .cache/
 .npm/
 .eslintcache
+
+# Project specific
+AI Rules/

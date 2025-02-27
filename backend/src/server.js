@@ -4,10 +4,12 @@ import dotenv from 'dotenv';
 import fetch from 'node-fetch';
 
 // Token计算函数
+// 这里实现了一个简单的token计算方法，分别处理中文和其他字符
 function calculateTokens(text) {
   if (!text) return 0;
   
   // 将文本按空格分割
+  // 这里使用正则表达式匹配一个或多个空白字符
   const words = text.split(/\s+/);
   let totalTokens = 0;
 
@@ -15,6 +17,7 @@ function calculateTokens(text) {
     if (!word) continue;
     
     // 分别计算中文字符和其他字符
+    // 这里使用Unicode范围匹配中文字符
     const chineseChars = word.match(/[\u4e00-\u9fa5]/g) || [];
     const otherChars = word.replace(/[\u4e00-\u9fa5]/g, '');
     
@@ -28,42 +31,53 @@ function calculateTokens(text) {
   }
 
   // 空格也计入token
+  // 这里匹配所有空白字符序列
   const spaces = text.match(/\s+/g) || [];
   totalTokens += spaces.length;
 
   return Math.max(1, totalTokens); // 确保至少返回1个token
 }
 
+// 加载环境变量
+// 这里使用dotenv来管理敏感配置信息
 dotenv.config();
 
+// 创建Express应用实例
+// 这里设置默认端口为8081
 const app = express();
-const port = process.env.PORT || 3000;
+const port = 8081;
 
-// 启用CORS和JSON解析
+// 启用中间件
+// 这里启用CORS支持跨域请求，使用express.json()解析JSON请求体
 app.use(cors());
 app.use(express.json());
 
-// 火山方舟 API配置
+// API配置
+// 这里配置火山方舟API的密钥和端点URL
 const API_KEY = process.env.ARK_API_KEY;
 const API_URL = 'https://ark.cn-beijing.volces.com/api/v3/chat/completions';
 
-// 验证必要的环境变量
+// 环境变量验证
+// 这里确保必要的API密钥已经设置
 if (!API_KEY) {
   console.error('错误: 未设置ARK_API_KEY环境变量');
   process.exit(1);
 }
 
-// 处理聊天请求
+// 处理聊天请求的路由
+// 这里实现了与DeepSeek API的集成和流式响应处理
 app.post('/api/chat', async (req, res) => {
   try {
     const { messages } = req.body;
 
     // 计算输入tokens
+    // 这里累加所有消息内容的token数量
     const promptTokens = messages.reduce((total, msg) => {
       return total + calculateTokens(msg.content);
     }, 0);
 
-    // 设置请求头
+    // 设置API请求头
+    // 这里包含认证信息和内容类型
     const headers = {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${API_KEY}`,
@@ -71,6 +85,7 @@ app.post('/api/chat', async (req, res) => {
     };
 
     // 准备请求体
+    // 这里配置模型参数和系统提示词
     const requestBody = {
       model: 'deepseek-r1-250120',
       messages: [
@@ -85,12 +100,14 @@ app.post('/api/chat', async (req, res) => {
       max_tokens: 2000
     };
 
-    // 设置响应头以支持流式输出
+    // 设置响应头
+    // 这里配置支持流式输出的响应头
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
-    // 发送请求到DeepSeek API
+    // 发送API请求
+    // 这里设置60秒超时时间
     const response = await fetch(API_URL, {
       method: 'POST',
       headers,
@@ -185,6 +202,6 @@ app.get('/', (req, res) => {
 });
 
 // 启动服务器
-app.listen(port, () => {
-  console.log(`服务器运行在 http://localhost:${port}`);
+app.listen(port, '127.0.0.1', () => {
+  console.log(`服务器运行在 http://127.0.0.1:${port}`);
 });

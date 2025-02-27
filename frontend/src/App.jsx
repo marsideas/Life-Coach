@@ -1,35 +1,50 @@
 import React, { useState, useRef, useEffect } from 'react';
 
+// App组件：Life Coach AI助手的主界面组件
+// 这里使用函数式组件，因为它更适合使用React Hooks来管理状态和副作用
 function App() {
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef(null);
+  // 状态管理
+  // 这里使用useState来管理聊天消息、输入框内容和加载状态
+  const [messages, setMessages] = useState([]); // 存储聊天历史记录
+  const [input, setInput] = useState(''); // 管理输入框的内容
+  const [isLoading, setIsLoading] = useState(false); // 控制加载状态
+  const messagesEndRef = useRef(null); // 用于自动滚动到最新消息
 
+  // 自动滚动到最新消息
+  // 这里使用平滑滚动效果提升用户体验
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // 当消息列表更新时自动滚动到底部
+  // 这里使用useEffect钩子来监听messages的变化
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
+  // 格式化当前时间为HH:MM格式
+  // 这里使用padStart确保小时和分钟始终是两位数
   const formatTime = () => {
     const now = new Date();
     return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
   };
 
+  // 处理消息提交
+  // 这里使用异步函数处理API请求和流式响应
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
 
+    // 创建用户消息对象并添加到消息列表
     const userMessage = { role: 'user', content: input, time: formatTime() };
     setMessages([...messages, userMessage]);
     setInput('');
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3000/api/chat', {
+      // 发送聊天请求到后端API
+      // 这里使用fetch API发送POST请求
+      const response = await fetch('http://localhost:8081/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -39,11 +54,14 @@ function App() {
         }),
       });
 
+      // 处理请求错误
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || '请求失败');
       }
 
+      // 处理流式响应
+      // 这里使用ReadableStream API来处理服务器发送的数据流
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let assistantMessage = { role: 'assistant', content: '', time: formatTime() };
@@ -61,7 +79,8 @@ function App() {
               if (line.includes('[DONE]')) break;
               const data = JSON.parse(line.slice(6));
               if (data.delta?.content) {
-                // 去除内容开头的空白字符
+                // 处理消息内容
+                // 这里去除开头的空白字符，保持文本显示整洁
                 if (assistantMessage.content === '') {
                   assistantMessage.content = data.delta.content.trimStart();
                 } else {
@@ -71,6 +90,8 @@ function App() {
                 if (data.usage) {
                   assistantMessage.usage = data.usage;
                 }
+                // 更新消息列表
+                // 这里使用函数式更新确保状态更新的准确性
                 setMessages(msgs => {
                   const newMsgs = [...msgs];
                   const lastMsg = newMsgs[newMsgs.length - 1];
@@ -89,6 +110,8 @@ function App() {
         }
       }
     } catch (error) {
+      // 错误处理
+      // 这里显示友好的错误消息给用户
       console.error('发送消息失败:', error);
       const errorMessage = error.message || '抱歉，发送消息时出现错误，请稍后重试。';
       setMessages(msgs => [...msgs, { 
