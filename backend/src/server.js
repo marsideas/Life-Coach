@@ -43,9 +43,9 @@ function calculateTokens(text) {
 dotenv.config();
 
 // 创建Express应用实例
-// 这里设置默认端口为8081
+// 这里设置默认端口为8080
 const app = express();
-const port = 8081;
+const port = 8080;
 
 // 启用中间件
 // 这里启用CORS支持跨域请求，使用express.json()解析JSON请求体
@@ -152,7 +152,7 @@ app.post('/api/chat', async (req, res) => {
           try {
             const jsonData = JSON.parse(line.slice(6));
             const delta = jsonData.choices?.[0]?.delta;
-            if (delta) {
+            if (delta && (delta.content || delta.role)) {
               // 计算当前响应块的token使用量
               let currentTokens = 0;
               if (delta.content) {

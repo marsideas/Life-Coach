@@ -73,15 +73,21 @@ graph TD
    [✓] Implement API Communication
      [✓] Integrate DeepSeek R1 API
      [✓] Implement stream response handling
-     - [ ] Add error retry mechanism
+     [✓] Add error retry mechanism
    [✓] Develop Chat Interface
      [✓] Create chat message components
      [✓] Implement typewriter effect
-     - [ ] Add message history
-   - [ ] User Experience Features
-     - [ ] Implement dark/light theme switch
+     [✓] Add message history
+   [✓] Layout Optimization
+     [✓] Implement left-right split structure
+     [✓] Develop left menu functionality
+       [✓] New chat button
+       [✓] Chat history list
+     [✓] Optimize right chat window layout
+   - [✓] User Experience Features
+     - [✓] Implement dark/light theme switch
      [✓] Add token calculation display
-     - [ ] Integrate loading state indicators
+     - [✓] Integrate loading state indicators
 
 3. Optimization and Testing
    - [ ] UI/UX Improvements
@@ -95,4 +101,4 @@ graph TD
    - [ ] Testing and Deployment
      - [ ] Add unit tests
      - [ ] Conduct performance testing
-     - [ ] Configure production environment deployment
+     - [ ] Configure production deployment

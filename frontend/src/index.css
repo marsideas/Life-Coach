@@ -54,3 +54,134 @@ body {
   white-space: nowrap;
   animation: typing 2s steps(40, end);
 }
+
+/* 打字机效果 */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.typing-effect {
+  position: relative;
+}
+
+.typing-effect::after {
+  content: '|';
+  position: relative;
+  display: inline-block;
+  color: currentColor;
+  animation: blink 1s step-end infinite;
+  margin-left: 2px;
+}
+
+/* 新增交動效果 */
+@keyframes buttonPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes inputFocus {
+  0% { box-shadow: 0 0 0 rgba(79, 70, 229, 0); }
+  100% { box-shadow: 0 0 20px rgba(79, 70, 229, 0.15); }
+}
+
+.button-pop {
+  animation: buttonPop 0.3s ease-in-out;
+}
+
+.input-focus-animation {
+  animation: inputFocus 0.3s ease-out forwards;
+}
+
+/* 平滑过渡效果 */
+.smooth-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 优化滚动行為 */
+* {
+  scroll-behavior: smooth;
+}
+
+/* 優化陰影轉換 */
+.shadow-transition {
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+/* 消息气泡布局优化 */
+.message-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  padding: 0 1rem;
+  max-width: 100%;
+  width: 100%;
+  justify-content: flex-end;
+}
+
+.user-message {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: flex-start;
+  margin-left: auto;
+  width: 100%;
+  text-align: right;
+}
+
+.user-message .message-bubble {
+  background-color: var(--primary-color);
+  color: white;
+  border-top-right-radius: 0.25rem;
+  margin-right: 0.5rem;
+  margin-left: auto;
+}
+
+.assistant-message {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+  margin-right: auto;
+  width: 100%;
+}
+
+.message-bubble {
+  max-width: 70%;
+  padding: 1rem 1.25rem;
+  border-radius: 1.25rem;
+  background-color: var(--bg-primary);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin: 0;
+  word-break: break-word;
+  line-height: 1.6;
+  font-size: 0.95rem;
+  display: inline-block;
+}
+
+.assistant-message .message-bubble {
+  background-color: var(--bg-secondary);
+  border-top-left-radius: 0.25rem;
+  margin-left: 0.5rem;
+}
+
+.avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  margin-top: 10px;
+}
+
+.user-message .avatar {
+  margin-left: 0.5rem;
+  margin-right: 0;
+  order: 1; /* 确保头像显示在最右侧 */
+}
+
+.assistant-message .avatar {
+  order: -1;
+}

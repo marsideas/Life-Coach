@@ -18,7 +18,7 @@ export default defineConfig({
   // 开发服务器配置
   // 这里配置开发服务器的端口和主机
   server: {
-    port: 8080,
+    port: 8081,
     host: 'localhost'
   },
   
