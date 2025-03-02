@@ -1,9 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css'; // 导入CSS文件，用于打字机效果
 import { getStoredMessages, storeMessages, getAllChatIds, deleteChat } from './utils/messageStorage';
+import { generateTitle, updateChatTitles } from './utils/titleGenerator';
 
-// App组件：Life Coach AI助手的主界面组件
+// App组件：Life Compass的主界面组件
 // 这里使用函数式组件，因为它更适合使用React Hooks来管理状态和副作用
+import chatAvatar from './assets/chat.svg';
+
 function App() {
   const [currentChatId, setCurrentChatId] = useState(() => {
     const lastChatId = localStorage.getItem('lastChatId');
@@ -15,7 +18,16 @@ function App() {
   });
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    // 从localStorage读取主题设置，默认为false（浅色模式）
+    const savedTheme = localStorage.getItem('theme');
+    const isDark = savedTheme === 'dark';
+    // 根据保存的主题设置初始化页面
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    }
+    return isDark;
+  });
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [chatHistory, setChatHistory] = useState(() => {
     // 初始化时从localStorage加载所有对话历史
@@ -24,7 +36,7 @@ function App() {
       const messages = getStoredMessages(id);
       return {
         id,
-        title: `对话 ${id.slice(-4)}`,
+        title: generateTitle(messages),
         messages
       };
     }).sort((a, b) => b.id - a.id); // 按ID降序排序，最新的对话在前面
@@ -72,7 +84,7 @@ function App() {
     if (!currentChatId) {
       const newChat = {
         id: activeChatId,
-        title: `对话 ${activeChatId.slice(-4)}`,
+        title: generateTitle([userMessage]),
         messages: [userMessage]
       };
       setChatHistory(prevHistory => [newChat, ...prevHistory]);
@@ -86,7 +98,12 @@ function App() {
       setChatHistory(prevHistory => {
         return prevHistory.map(chat => {
           if (chat.id === activeChatId) {
-            return { ...chat, messages: [...chat.messages, userMessage] };
+            const updatedMessages = [...chat.messages, userMessage];
+            return { 
+              ...chat, 
+              messages: updatedMessages,
+              title: generateTitle(updatedMessages)
+            };
           }
           return chat;
         });
@@ -104,14 +121,11 @@ function App() {
     setMessages(prevMessages => [...prevMessages, emptyAssistantMessage]);
 
     try {
-      // 发送聊天请求到后端API
-      // 这里使用fetch API发送POST请求
-      
       // 获取当前处理对话的完整消息历史
       let chatMessages = [];
       
       // 从对话历史中获取正确的消息列表
-      const currentChat = chatHistory.find(chat => chat.id === processingChatId);
+      const currentChat = chatHistory.find(chat => chat.id === activeChatId);
       if (currentChat) {
         // 如果在历史中找到了当前处理的对话，使用其消息历史
         chatMessages = [...currentChat.messages, userMessage];
@@ -132,8 +146,8 @@ function App() {
 
       // 处理请求错误
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || '请求失败');
+        const errorData = await response.json().catch(() => ({ error: `HTTP错误: ${response.status}` }));
+        throw new Error(errorData.error || `请求失败: ${response.status}`);
       }
 
       // 处理流式响应
@@ -150,13 +164,13 @@ function App() {
         const lines = chunk.split('\n');
 
         for (const line of lines) {
+          if (line.trim() === '') continue;
+          if (line.trim() === 'data: [DONE]') break;
           if (line.startsWith('data: ')) {
             try {
-              if (line.includes('[DONE]')) break;
               const data = JSON.parse(line.slice(6));
               if (data.delta?.content) {
                 // 处理消息内容
-                // 这里去除开头的空白字符，保持文本显示整洁
                 if (assistantMessage.content === '') {
                   assistantMessage.content = data.delta.content.trimStart();
                 } else {
@@ -166,40 +180,20 @@ function App() {
                 if (data.usage) {
                   assistantMessage.usage = data.usage;
                 }
-                // 更新消息列表 - 只有当当前对话ID与处理开始时的对话ID相同时才更新当前显示的消息
-                if (currentChatId === processingChatId) {
-                  setMessages(msgs => {
-                    const newMsgs = [...msgs];
-                    const lastMsg = newMsgs[newMsgs.length - 1];
-                    if (lastMsg?.role === 'assistant' && !lastMsg.isError) {
-                      newMsgs[newMsgs.length - 1] = { ...assistantMessage };
-                    } else if (!lastMsg || lastMsg.role === 'user') {
-                      newMsgs.push({ ...assistantMessage });
-                    }
-                    return newMsgs;
-                  });
-                }
-                
-                // 同步更新对话历史中的消息 - 始终更新对应的对话历史，无论当前显示的是哪个对话
-                setChatHistory(prevHistory => {
-                  return prevHistory.map(chat => {
-                    if (chat.id === processingChatId) { // 使用processingChatId而不是currentChatId
-                      // 使用函数式更新获取最新的chat.messages，而不是使用messages状态
-                      const updatedMessages = [...chat.messages];
-                      const lastMsg = updatedMessages[updatedMessages.length - 1];
-                      if (lastMsg?.role === 'assistant' && !lastMsg.isError) {
-                        updatedMessages[updatedMessages.length - 1] = { ...assistantMessage };
-                      } else if (!lastMsg || lastMsg.role === 'user') {
-                        updatedMessages.push({ ...assistantMessage });
-                      }
-                      return { ...chat, messages: updatedMessages };
-                    }
-                    return chat;
-                  });
+                // 更新消息列表
+                setMessages(msgs => {
+                  const newMsgs = [...msgs];
+                  const lastMsg = newMsgs[newMsgs.length - 1];
+                  if (lastMsg?.role === 'assistant' && !lastMsg.isError) {
+                    newMsgs[newMsgs.length - 1] = { ...assistantMessage };
+                  } else {
+                    newMsgs.push({ ...assistantMessage });
+                  }
+                  return newMsgs;
                 });
               }
             } catch (e) {
-              console.error('解析响应数据失败:', e);
+              console.error('解析响应数据失败:', e, '原始数据:', line);
             }
           }
         }
@@ -234,62 +228,52 @@ function App() {
 
     } catch (error) {
       // 错误处理
-      // 这里实现重试机制
       console.error('发送消息失败:', error);
-      if (retryCount > 0) {
-        console.log(`尝试重新发送消息，剩余重试次数: ${retryCount - 1}`);
-        // 添加延迟重试，避免立即重试可能导致的连续失败
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        return handleSubmit(e, retryCount - 1);
-      }
-      const errorMessage = error.message || '抱歉，发送消息时出现错误，请稍后重试。';
-      
-      // 更新当前显示的消息列表 - 只有当当前对话ID与处理开始时的对话ID相同时才更新
-      if (currentChatId === processingChatId) {
-        setMessages(msgs => {
-          // 移除加载中的消息
-          const filteredMsgs = msgs.filter(m => !(m.role === 'assistant' && m.isLoading));
-          return [...filteredMsgs, { 
+      // 只有在没有重试次数时才添加错误消息
+      if (retryCount <= 0) {
+        const errorMessage = error.message || '抱歉，发送消息时出现错误，请稍后重试。';
+        
+        // 创建错误消息和重试按钮
+        const errorMessages = [
+          { 
             role: 'assistant', 
             content: errorMessage,
             isError: true,
             time: formatTime()
-          }];
-        });
-        // 显示重试按钮
-        setMessages(msgs => [...msgs, {
-          role: 'system',
-          content: '点击重试',
-          isRetry: true,
-          time: formatTime(),
-          onRetry: () => handleSubmit(e)
-        }]);
-      }
-      
-      // 同步更新对话历史中的错误消息 - 始终更新对应的对话历史，无论当前显示的是哪个对话
-      setChatHistory(prevHistory => {
-        return prevHistory.map(chat => {
-          if (chat.id === processingChatId) {
-            // 移除加载中的消息
-            const filteredMsgs = chat.messages.filter(m => !(m.role === 'assistant' && m.isLoading));
-            // 添加错误消息
-            const updatedMessages = [...filteredMsgs, { 
-              role: 'assistant', 
-              content: errorMessage,
-              isError: true,
-              time: formatTime()
-            }, {
-              role: 'system',
-              content: '点击重试',
-              isRetry: true,
-              time: formatTime(),
-              onRetry: () => handleSubmit(e)
-            }];
-            return { ...chat, messages: updatedMessages };
+          },
+          {
+            role: 'system',
+            content: '点击重试',
+            isRetry: true,
+            time: formatTime(),
+            onRetry: () => handleSubmit(e)
           }
-          return chat;
+        ];
+
+        // 更新当前显示的消息列表和对话历史
+        if (currentChatId === processingChatId) {
+          setMessages(msgs => {
+            const filteredMsgs = msgs.filter(m => !(m.role === 'assistant' && m.isLoading));
+            return [...filteredMsgs, ...errorMessages];
+          });
+        }
+        
+        setChatHistory(prevHistory => {
+          return prevHistory.map(chat => {
+            if (chat.id === processingChatId) {
+              const filteredMsgs = chat.messages.filter(m => !(m.role === 'assistant' && m.isLoading));
+              return { ...chat, messages: [...filteredMsgs, ...errorMessages] };
+            }
+            return chat;
+          });
         });
-      });
+      } else {
+        // 如果还有重试次数，则进行重试
+        console.log(`尝试重新发送消息，剩余重试次数: ${retryCount - 1}`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return handleSubmit(e, retryCount - 1);
+      }
+      // 错误处理已在上面的if-else分支中完成，这里不需要重复代码
     } finally {
       setIsLoading(false);
     }
@@ -297,7 +281,10 @@ function App() {
 
   // 切换主题
   const toggleTheme = () => {
-    setDarkMode(!darkMode);
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    // 将主题设置保存到localStorage
+    localStorage.setItem('theme', newDarkMode ? 'dark' : 'light');
     document.documentElement.classList.toggle('dark');
   };
 
@@ -324,16 +311,22 @@ function App() {
     
     // 生成新对话ID和对话对象
     const newChatId = Date.now().toString();
+    const welcomeMessage = {
+      role: 'assistant',
+      content: '👋 你好！我是你的Life Compass助手。我可以帮你：\n\n• 制定个人发展计划\n• 提供职业规划建议\n• 解答生活困惑\n• 给出心理调适建议\n\n让我们开始对话吧！',
+      time: formatTime(),
+      isWelcome: true // 添加标记，用于应用特殊样式
+    };
     const newChat = {
       id: newChatId,
-      title: `对话 ${newChatId.slice(-4)}`,
-      messages: []
+      title: '新对话',
+      messages: [welcomeMessage]
     };
     
     // 更新对话历史和当前对话ID
     setChatHistory(prevHistory => [newChat, ...prevHistory]);
     setCurrentChatId(newChatId);
-    setMessages([]);
+    setMessages(newChat.messages);
     localStorage.setItem('lastChatId', newChatId);
     setShowNewChatModal(false);
   };
@@ -499,8 +492,9 @@ function App() {
       if (newMessages.length === 0) {
         return [{
           role: 'assistant',
-          content: '👋 你好！我是你的Life Coach AI助手。我可以帮你：\n\n• 制定个人发展计划\n• 提供职业规划建议\n• 解答生活困惑\n• 给出心理调适建议\n\n让我们开始对话吧！',
-          time: formatTime()
+          content: '👋 你好！我是你的Life Compass助手。我可以帮你：\n\n• 制定个人发展计划\n• 提供职业规划建议\n• 解答生活困惑\n• 给出心理调适建议\n\n让我们开始对话吧！',
+          time: formatTime(),
+          isWelcome: true // 添加标记，用于应用特殊样式
         }];
       }
       return newMessages;
@@ -517,8 +511,9 @@ function App() {
               ...chat,
               messages: [{
                 role: 'assistant',
-                content: '👋 你好！我是你的Life Coach AI助手。我可以帮你：\n\n• 制定个人发展计划\n• 提供职业规划建议\n• 解答生活困惑\n• 给出心理调适建议\n\n让我们开始对话吧！',
-                time: formatTime()
+                content: '👋 你好！我是你的Life Compass助手。我可以帮你：\n\n• 制定个人发展计划\n• 提供职业规划建议\n• 解答生活困惑\n• 给出心理调适建议\n\n让我们开始对话吧！',
+                time: formatTime(),
+                isWelcome: true // 添加标记，用于应用特殊样式
               }]
             };
           }
@@ -557,7 +552,7 @@ function App() {
       {/* 左侧菜单 - 优化视觉层次和交互效果 */}
       <div className={`fixed left-0 top-0 h-full w-72 ${darkMode ? 'bg-gray-800/95 backdrop-blur-sm' : 'bg-white/90 backdrop-blur-sm'} shadow-2xl p-6 transition-all duration-500 border-r ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
         <div className="flex items-center justify-between mb-10">
-          <h1 className={`text-2xl font-bold bg-gradient-to-r ${darkMode ? 'from-indigo-400 to-purple-400' : 'from-indigo-600 to-purple-600'} bg-clip-text text-transparent`}>Life Coach AI</h1>
+          <h1 className={`text-2xl font-bold bg-gradient-to-r ${darkMode ? 'from-indigo-400 to-purple-400' : 'from-indigo-600 to-purple-600'} bg-clip-text text-transparent`}>Life Compass</h1>
           <button
             onClick={toggleTheme}
             className={`p-2.5 rounded-xl ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-all duration-300 hover:scale-105`}
@@ -625,13 +620,10 @@ function App() {
                   className={`message-container ${message.role === 'user' ? 'user-message' : 'assistant-message'} group`}
                 >
                   {message.role === 'assistant' && (
-                    <div className="avatar bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M12 2a2 2 0 00-2 2v1a1 1 0 01-1 1H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-4a1 1 0 01-1-1V4a2 2 0 00-2-2h-2z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M9 10h6m-3-3v6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <circle cx="8" cy="16" r="1" fill="currentColor"/>
-                        <circle cx="16" cy="16" r="1" fill="currentColor"/>
-                      </svg>
+                    <div className="avatar flex items-center justify-center">
+                      <div className="avatar">
+                      <img src={chatAvatar} alt="AI" className="img-w-5 h-5" />
+                      </div>
                     </div>
                   )}
                   <div className="relative flex-1">
@@ -640,9 +632,9 @@ function App() {
                     >
                       {message.isLoading ? (
                         <div className="flex items-center space-x-2">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                          <div className="w-2 h-2 rounded-full animate-bounce" style={{ animationDelay: '0ms', backgroundColor: 'transparent', border: '2px solid currentColor' }}></div>
+                          <div className="w-2 h-2 rounded-full animate-bounce" style={{ animationDelay: '150ms', backgroundColor: 'transparent', border: '2px solid currentColor' }}></div>
+                          <div className="w-2 h-2 rounded-full animate-bounce" style={{ animationDelay: '300ms', backgroundColor: 'transparent', border: '2px solid currentColor' }}></div>
                         </div>
                       ) : message.isTyping ? (
                         <div className="typing-effect whitespace-pre-wrap">{message.content || '　'}</div>
@@ -687,19 +679,21 @@ function App() {
                 </div>
               ))
             ) : (
-              /* DeepSeek风格的欢迎界面 */
+              /* Life Compass风格的欢迎界面 */
               <div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
-                <div className="w-16 h-16 mb-6 rounded-full bg-blue-500 flex items-center justify-center">
-                  <svg className="w-10 h-10 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M12 2a2 2 0 00-2 2v1a1 1 0 01-1 1H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-4a1 1 0 01-1-1V4a2 2 0 00-2-2h-2z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M9 10h6m-3-3v6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <circle cx="8" cy="16" r="1" fill="currentColor"/>
-                    <circle cx="16" cy="16" r="1" fill="currentColor"/>
-                  </svg>
+                <div className="w-16 h-16 mb-6 rounded-full bg-white flex items-center justify-center">
+                  <img src={chatAvatar} alt="AI" className="w-20 h-20" />
                 </div>
-                <h2 className="text-2xl font-bold mb-2">我是 DeepSeek, 很高兴见到你!</h2>
+                <h2 className="text-2xl font-bold mb-2">我是 Life Compass, 很高兴见到你!</h2>
                 <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md">
-                  我可以帮你写代码、读文件、写作各种创意内容，请把你的任务交给我吧~
+                  👋 你好！我是你的Life Compass助手。我可以帮你：
+
+• 制定个人发展计划
+• 提供职业规划建议
+• 解答生活困惑
+• 给出心理调适建议
+
+让我们开始对话吧！
                 </p>
               </div>
             )}

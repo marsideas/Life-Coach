@@ -1,7 +1,7 @@
-# Life Coach AI 助手
+# Life Compass
 
 ## 项目目标
-创建一个基于DeepSeek R1 API的智能Life Coach网站，通过AI对话为用户提供个人成长建议和指导。
+创建一个基于DeepSeek R1 API的智能Life Compass网站，通过AI对话为用户提供个人成长建议和指导。
 
 ## 技术选型
 - 前端：React + Vite
@@ -91,6 +91,9 @@ graph TD
 
 3. 优化和测试
    - [ ] UI/UX改进
+     - [✓] 更新应用名称为Life Compass
+     - [✓] 更新AI头像
+     - [✓] 对话列表内容从序号形式改为聊天内容简短总结
      - [ ] 优化响应式布局
      - [ ] 改进交互动画
      - [ ] 完善错误提示

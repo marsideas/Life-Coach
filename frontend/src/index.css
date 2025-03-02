@@ -4,184 +4,411 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
-/* Custom Variables */
+/* Custom Variables - 自定义CSS变量 */
+/* 定义全局CSS变量，用于统一管理颜色和间距，便于主题切换和样式维护 */
 :root {
-  --primary-color: #4F46E5;
-  --secondary-color: #818CF8;
-  --text-primary: #1F2937;
-  --text-secondary: #6B7280;
-  --bg-primary: #FFFFFF;
-  --bg-secondary: #F3F4F6;
-  --spacing-base: 1rem;
-  --spacing-large: 2rem;
+  --primary-color: #4F46E5;    /* 主色调：靛蓝色，用于重点强调和主要按钮 */
+  --secondary-color: #818CF8;   /* 次要色调：浅紫色，用于次要元素和悬停状态 */
+  --text-primary: #1F2937;      /* 主要文本颜色：深灰色，用于标题和正文 */
+  --text-secondary: #6B7280;    /* 次要文本颜色：中灰色，用于辅助文本 */
+  --bg-primary: #FFFFFF;        /* 主要背景色：白色，用于卡片和主要区域 */
+  --bg-secondary: #F3F4F6;      /* 次要背景色：浅灰色，用于页面背景和次要区域 */
+  --spacing-base: 1rem;         /* 基础间距：16px，用于常规元素间距 */
+  --spacing-large: 2rem;        /* 大间距：32px，用于区块间的间距 */
 }
 
-/* Base Styles */
+/* 暗色主题变量 - 当.dark类应用于根元素时生效 */
+/* 通过CSS变量实现无缝的明暗主题切换，无需重复定义样式规则 */
+:root.dark {
+  --primary-color: #818CF8;      /* 暗色模式下主色调：更亮的紫色，提高对比度 */
+  --secondary-color: #4F46E5;    /* 暗色模式下次要色调：深紫色 */
+  --text-primary: #F9FAFB;       /* 暗色模式下主要文本：近白色，确保在深色背景上可读 */
+  --text-secondary: #D1D5DB;     /* 暗色模式下次要文本：浅灰色 */
+  --bg-primary: #1F2937;         /* 暗色模式下主要背景：深蓝灰色 */
+  --bg-secondary: #111827;       /* 暗色模式下次要背景：近黑色 */
+}
+
+/* Base Styles - 基础样式 */
+/* 设置全局基础样式，包括字体、边距和文本渲染方式 */
 body {
-  margin: 0;
+  margin: 0;                    /* 移除默认边距 */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: var(--text-primary);
-  background-color: var(--bg-secondary);
+    sans-serif;                 /* 使用系统默认字体栈，确保在各平台上的最佳显示效果 */
+  -webkit-font-smoothing: antialiased;    /* 在WebKit浏览器中启用字体平滑，提高文字清晰度 */
+  -moz-osx-font-smoothing: grayscale;     /* 在Firefox中启用字体平滑 */
+  color: var(--text-primary);              /* 使用CSS变量设置文本颜色，支持主题切换 */
+  background-color: var(--bg-secondary);   /* 使用CSS变量设置背景色 */
 }
 
-/* Animations */
+/* Animations - 动画效果 */
+/* 定义淡入上移动画，用于元素的平滑出现效果 */
 @keyframes fadeIn {
   from {
-    opacity: 0;
-    transform: translateY(10px);
+    opacity: 0;                /* 初始状态：完全透明 */
+    transform: translateY(10px);  /* 初始位置：向下偏移10px */
   }
   to {
-    opacity: 1;
-    transform: translateY(0);
+    opacity: 1;                /* 结束状态：完全不透明 */
+    transform: translateY(0);     /* 结束位置：回到原位 */
   }
 }
 
+/* 应用淡入动画的类 */
 .animate-fade-in {
-  animation: fadeIn 0.5s ease-out forwards;
+  animation: fadeIn 0.5s ease-out forwards;  /* 0.5秒淡入动画，缓出效果，保持最终状态 */
 }
 
+/* 打字机效果动画 - 模拟文字逐个显示 */
 @keyframes typing {
-  from { width: 0 }
-  to { width: 100% }
+  from { width: 0 }            /* 初始状态：宽度为0，不显示任何文字 */
+  to { width: 100% }           /* 结束状态：显示全部文字 */
 }
 
+/* 应用打字机动画的类 */
 .typing-animation {
-  overflow: hidden;
-  white-space: nowrap;
-  animation: typing 2s steps(40, end);
+  overflow: hidden;            /* 隐藏溢出内容，配合宽度变化实现打字效果 */
+  white-space: nowrap;         /* 防止文本换行，保持在一行 */
+  animation: typing 2s steps(40, end);  /* 2秒打字动画，分40步完成，阶梯式过渡 */
 }
 
-/* 打字机效果 */
+/* 打字机光标效果 - 模拟输入光标的闪烁 */
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+  0%, 100% { opacity: 1; }     /* 开始和结束时可见 */
+  50% { opacity: 0; }          /* 中间点完全透明，实现闪烁效果 */
 }
 
+/* 打字效果的容器 */
 .typing-effect {
-  position: relative;
+  position: relative;          /* 建立定位上下文，用于光标定位 */
 }
 
+/* 创建闪烁的光标 */
 .typing-effect::after {
-  content: '|';
-  position: relative;
-  display: inline-block;
-  color: currentColor;
-  animation: blink 1s step-end infinite;
-  margin-left: 2px;
+  content: '|';                /* 使用竖线字符作为光标 */
+  position: relative;          /* 相对定位 */
+  display: inline-block;       /* 行内块级显示 */
+  color: currentColor;         /* 继承父元素的颜色 */
+  animation: blink 1s step-end infinite;  /* 1秒闪烁动画，无限循环 */
+  margin-left: 2px;            /* 与文本保持小距离 */
 }
 
-/* 新增交動效果 */
+/* 交互动效 - 增强用户界面的反馈效果 */
+/* 按钮弹出效果动画 - 点击时的微膨胀反馈 */
 @keyframes buttonPop {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% { transform: scale(1); }      /* 初始大小 */
+  50% { transform: scale(1.05); }  /* 中间点放大5% */
+  100% { transform: scale(1); }    /* 恢复原始大小 */
 }
 
+/* 输入框聚焦时的光晕效果动画 */
 @keyframes inputFocus {
-  0% { box-shadow: 0 0 0 rgba(79, 70, 229, 0); }
-  100% { box-shadow: 0 0 20px rgba(79, 70, 229, 0.15); }
+  0% { box-shadow: 0 0 0 rgba(79, 70, 229, 0); }           /* 初始无阴影 */
+  100% { box-shadow: 0 0 20px rgba(79, 70, 229, 0.15); }  /* 添加淡紫色光晕 */
 }
 
+/* 应用按钮弹出动画的类 */
 .button-pop {
-  animation: buttonPop 0.3s ease-in-out;
+  animation: buttonPop 0.3s ease-in-out;  /* 0.3秒弹出动画，平滑过渡 */
 }
 
+/* 应用输入框聚焦动画的类 */
 .input-focus-animation {
-  animation: inputFocus 0.3s ease-out forwards;
+  animation: inputFocus 0.3s ease-out forwards;  /* 0.3秒聚焦动画，保持最终状态 */
 }
 
-/* 平滑过渡效果 */
+/* 过渡与滚动效果 - 提升界面流畅度 */
+/* 平滑过渡效果 - 用于属性变化时的渐变过渡 */
 .smooth-transition {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);  /* 0.3秒过渡，使用标准缓动曲线 */
 }
 
-/* 优化滚动行為 */
+/* 优化滚动行为 - 全局应用平滑滚动 */
 * {
-  scroll-behavior: smooth;
+  scroll-behavior: smooth;  /* 使所有滚动操作变得平滑 */
 }
 
-/* 優化陰影轉換 */
+/* 优化阴影转换 - 阴影变化时的平滑过渡 */
 .shadow-transition {
-  transition: box-shadow 0.3s ease-in-out;
+  transition: box-shadow 0.3s ease-in-out;  /* 阴影变化时的0.3秒平滑过渡 */
 }
 
-/* 消息气泡布局优化 */
+/* 消息布局系统 - 聊天界面的结构样式 */
+/* 消息容器 - 包含所有类型消息的基础容器 */
 .message-container {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  margin: 1.5rem 0;
-  padding: 0 1rem;
-  max-width: 100%;
-  width: 100%;
-  justify-content: flex-end;
+  display: flex;              /* 弹性布局，便于对齐和排列子元素 */
+  align-items: flex-start;    /* 子元素从顶部对齐，适合不同高度的消息 */
+  gap: 0.5rem;                /* 子元素之间的间距 */
+  margin: 1.5rem 0;           /* 上下外边距，分隔不同消息 */
+  padding: 0 1.5rem;          /* 左右内边距，与容器边缘保持距离 */
+  max-width: 100%;            /* 最大宽度限制，防止溢出 */
 }
 
+/* 用户消息容器 - 用于显示用户发送的消息 */
 .user-message {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  align-items: flex-start;
-  margin-left: auto;
-  width: 100%;
-  text-align: right;
+  display: flex;                /* 弹性布局 */
+  flex-direction: row;          /* 水平排列子元素 */
+  justify-content: flex-end;    /* 子元素靠右对齐 */
+  align-items: flex-start;      /* 子元素从顶部对齐 */
+  width: 100%;                  /* 占满容器宽度 */
+  margin-left: auto;            /* 左侧自动外边距，推向右侧 */
+  padding: 0 1.5rem;            /* 左右内边距 */
+  text-align: right;            /* 文本右对齐 */
 }
 
+/* 用户消息气泡 - 用户消息的视觉容器 */
 .user-message .message-bubble {
+  background-color: var(--primary-color);  /* 使用主色调作为背景 */
+  color: white;                           /* 文本颜色为白色，确保在深色背景上可读 */
+  border-radius: 1.25rem;                 /* 圆角边框，营造气泡效果 */
+  border-top-right-radius: 0.25rem;       /* 右上角为小圆角，创建指向用户头像的效果 */
+  margin-left: 0;                         /* 左侧无外边距 */
+  margin-right: 10px;                     /* 右侧外边距，与头像保持距离 */
+  text-align: left;                       /* 文本左对齐，便于阅读 */
+  max-width: 70%;                         /* 最大宽度限制，防止过长消息占满屏幕 */
+}
+
+/* 用户头像样式调整 */
+.user-message .avatar {
+  margin-left: 0;                /* 移除左侧外边距 */
+  margin-right: 0;               /* 移除右侧外边距 */
+}
+
+/* 助手消息容器 - 用于显示AI助手发送的消息 */
+.assistant-message {
+  display: flex;                /* 弹性布局 */
+  flex-direction: row;          /* 水平排列子元素 */
+  justify-content: flex-start;  /* 子元素靠左对齐 */
+  align-items: flex-start;      /* 子元素从顶部对齐 */
+  margin-right: auto;           /* 右侧自动外边距，推向左侧 */
+  width: 100%;                  /* 占满容器宽度 */
+}
+
+/* 通用消息气泡 - 所有消息的基础样式 */
+.message-bubble {
+  max-width: 70%;                /* 最大宽度限制，防止过长消息占满屏幕 */
+  padding: 1rem 1.25rem;         /* 内边距，使文本与边缘保持适当距离 */
+  border-radius: 1.25rem;        /* 圆角边框，营造气泡效果 */
+  background-color: var(--bg-primary);  /* 使用主背景色 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);  /* 轻微阴影，增加立体感 */
+  margin: 0;                     /* 移除外边距 */
+  word-break: break-word;        /* 允许单词内换行，防止溢出 */
+  line-height: 1.6;              /* 行高，提高文本可读性 */
+  font-size: 0.95rem;            /* 字体大小 */
+  display: inline-block;         /* 行内块级显示，宽度自适应内容 */
+  color: var(--text-primary);    /* 使用主文本颜色 */
+  transition: background-color 0.3s ease, color 0.3s ease;  /* 颜色平滑过渡效果 */
+}
+
+/* 助手消息气泡 - 助手消息的特殊样式 */
+.assistant-message .message-bubble {
+  background-color: var(--bg-secondary);  /* 使用次要背景色，区分用户消息 */
+  border-top-left-radius: 0.25rem;       /* 左上角为小圆角，创建指向助手头像的效果 */
+  margin-left: 0.5rem;                   /* 左侧外边距，与头像保持距离 */
+}
+
+/* 头像样式 - 用户和助手的头像通用样式 */
+.avatar {
+  width: 40px;                /* 头像宽度调整为40px */
+  height: 40px;               /* 头像高度调整为40px */
+  border-radius: 50%;           /* 保持圆形边框 */
+  object-fit: cover;            /* 保持图片填充方式 */
+  flex-shrink: 0;               /* 保持防止在弹性布局中被压缩 */
+  margin-top: 0.25rem;          /* 保持顶部外边距 */
+}
+
+/* 欢迎消息样式优化 - 首次进入应用时显示的特殊欢迎卡片 */
+.welcome-message {
+  padding: 3.5rem;              /* 大内边距，创造宽敞的空间感 */
+  border-radius: 2.5rem;        /* 大圆角，现代感设计 */
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);  /* 渐变背景 */
+  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15), 0 10px 20px -8px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6);  /* 多层阴影，增强立体感 */
+  margin: 3.5rem auto;          /* 上下外边距和水平居中 */
+  max-width: 90%;               /* 最大宽度限制 */
+  width: 900px;                 /* 固定宽度 */
+  transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);  /* 平滑过渡效果 */
+  transform: translateY(0);     /* 初始位置 */
+  opacity: 1;                   /* 完全不透明 */
+  border: 1px solid rgba(255, 255, 255, 0.2);  /* 半透明边框 */
+  position: relative;           /* 建立定位上下文 */
+  overflow: hidden;             /* 隐藏溢出内容 */
+}
+
+/* 欢迎消息悬停效果 - 鼠标悬停时的交互反馈 */
+.welcome-message:hover {
+  transform: translateY(-6px);  /* 向上浮动效果 */
+  box-shadow: 0 25px 50px -15px rgba(0, 0, 0, 0.18), 0 12px 24px -8px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.7);  /* 增强阴影效果 */
+}
+
+/* 欢迎消息光效装饰 - 添加动态光晕效果 */
+.welcome-message::before {
+  content: '';                  /* 创建伪元素 */
+  position: absolute;           /* 绝对定位 */
+  top: -50%;                    /* 顶部偏移 */
+  left: -50%;                   /* 左侧偏移 */
+  width: 200%;                  /* 宽度扩展 */
+  height: 200%;                 /* 高度扩展 */
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);  /* 径向渐变 */
+  transform: rotate(0deg);      /* 初始旋转角度 */
+  opacity: 0;                   /* 初始透明 */
+  transition: opacity 1.5s ease, transform 2s ease;  /* 过渡效果 */
+}
+
+/* 欢迎消息悬停时的光效变化 */
+.welcome-message:hover::before {
+  opacity: 1;                   /* 变为可见 */
+  transform: rotate(15deg);     /* 旋转15度 */
+}
+
+/* 欢迎消息内的气泡样式 - 特殊定制的欢迎文本容器 */
+.welcome-message .message-bubble {
+  font-size: 1.5rem;            /* 较大字体大小 */
+  line-height: 1.8;             /* 宽松行高 */
+  color: var(--text-primary);   /* 使用主文本颜色 */
+  background: transparent;      /* 透明背景 */
+  box-shadow: none;             /* 移除阴影 */
+  max-width: 100%;              /* 最大宽度 */
+  text-align: center;           /* 文本居中 */
+  padding: 0;                   /* 移除内边距 */
+  letter-spacing: -0.02em;      /* 字母间距微调 */
+}
+
+.welcome-message .message-bubble strong {
+  color: var(--primary-color);  /* 使用主色调作为文本颜色 */
+  font-weight: 800;             /* 极粗字体，增强视觉重要性 */
+  font-size: 2.2rem;            /* 大字体尺寸，作为标题 */
+  display: block;               /* 块级显示，独占一行 */
+  margin-bottom: 1.8rem;        /* 底部外边距，与下方内容分隔 */
+  letter-spacing: -0.03em;      /* 字母间距微调，提高可读性 */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);  /* 轻微文字阴影，增强立体感 */
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));  /* 渐变背景 */
+  -webkit-background-clip: text;  /* 背景裁剪为文本形状 */
+  -webkit-text-fill-color: transparent;  /* 文本填充为透明，显示背景 */
+  animation: titlePulse 3s infinite alternate ease-in-out;  /* 应用脉动动画，增强视觉吸引力 */
+}
+
+/* 标题脉动动画 - 为欢迎消息标题添加微妙的缩放效果 */
+@keyframes titlePulse {
+  0% {
+    opacity: 0.95;              /* 初始状态略微透明 */
+    transform: scale(1);        /* 初始大小 */
+  }
+  100% {
+    opacity: 1;                /* 结束状态完全不透明 */
+    transform: scale(1.03);     /* 放大3%，创造呼吸效果 */
+  }
+}
+
+/* 欢迎消息选项列表 - 功能选项的容器样式 */
+.welcome-message .message-bubble ul {
+  list-style: none;             /* 移除默认列表样式 */
+  padding: 0;                   /* 移除内边距 */
+  margin: 3rem 0;               /* 上下外边距，与其他内容分隔 */
+  display: grid;                /* 网格布局，便于排列选项 */
+  gap: 1.5rem;                  /* 选项之间的间距 */
+  position: relative;           /* 建立定位上下文 */
+}
+
+/* 欢迎消息选项项 - 单个功能选项的样式 */
+.welcome-message .message-bubble li {
+  margin: 0;                    /* 移除外边距 */
+  padding: 1.5rem 2.5rem;       /* 内边距，创造舒适的点击区域 */
+  background: rgba(79, 70, 229, 0.08);  /* 半透明背景，与主色调协调 */
+  border-radius: 1.8rem;        /* 大圆角，现代感设计 */
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);  /* 平滑过渡效果 */
+  cursor: pointer;              /* 鼠标指针变为手型，提示可点击 */
+  font-size: 1.3rem;            /* 较大字体尺寸，提高可读性 */
+  position: relative;           /* 建立定位上下文 */
+  overflow: hidden;             /* 隐藏溢出内容，用于光效动画 */
+  border: 1px solid rgba(79, 70, 229, 0.15);  /* 半透明边框 */
+  backdrop-filter: blur(5px);   /* 背景模糊效果，增强深度感 */
+  box-shadow: 0 8px 16px -6px rgba(79, 70, 229, 0.12);  /* 轻微阴影，增强立体感 */
+}
+
+/* 选项光效装饰 - 添加滑动光效，增强交互反馈 */
+.welcome-message .message-bubble li:before {
+  content: '';                  /* 创建伪元素 */
+  position: absolute;           /* 绝对定位 */
+  top: 0;                       /* 顶部对齐 */
+  left: 0;                      /* 左侧对齐 */
+  right: 0;                     /* 右侧对齐 */
+  bottom: 0;                    /* 底部对齐，覆盖整个选项 */
+  background: linear-gradient(120deg, transparent 0%, rgba(79, 70, 229, 0.2) 50%, transparent 100%);  /* 渐变光效 */
+  transform: translateX(-100%); /* 初始位置在元素左侧外部 */
+  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);  /* 平滑过渡效果 */
+  z-index: 1;                   /* 确保在内容之下，装饰层 */
+}
+
+/* 选项悬停效果 - 鼠标悬停时的视觉反馈 */
+.welcome-message .message-bubble li:hover {
+  transform: translateX(10px) scale(1.03);  /* 向右移动并微微放大，提供动态感 */
+  background: rgba(79, 70, 229, 0.15);      /* 背景色加深，增强对比度 */
+  box-shadow: 0 12px 24px -8px rgba(79, 70, 229, 0.25), 0 4px 8px -4px rgba(79, 70, 229, 0.15);  /* 增强阴影效果 */
+  border-color: rgba(79, 70, 229, 0.3);     /* 边框颜色加深，提高可见度 */
+}
+
+/* 选项箭头指示器 - 添加方向指示，增强可用性 */
+.welcome-message .message-bubble li::after {
+  content: '→';                /* 使用箭头字符作为指示器 */
+  position: absolute;           /* 绝对定位 */
+  right: 2.5rem;                /* 右侧位置 */
+  top: 50%;                     /* 垂直居中 */
+  transform: translateY(-50%) translateX(0);  /* 精确垂直居中定位 */
+  opacity: 0;                   /* 初始状态不可见 */
+  transition: all 0.4s ease;    /* 平滑过渡效果 */
+  font-size: 1.4rem;            /* 箭头大小 */
+  color: var(--primary-color);  /* 使用主色调，保持一致性 */
+}
+
+/* 选项箭头悬停效果 - 鼠标悬停时显示箭头并添加移动效果 */
+.welcome-message .message-bubble li:hover::after {
+  opacity: 1;                   /* 变为可见 */
+  transform: translateY(-50%) translateX(5px);  /* 向右移动5px，创造动态指示效果 */
+}
+
+/* 选项光效悬停动画 - 鼠标悬停时触发光效从左向右扫过 */
+.welcome-message .message-bubble li:hover:before {
+  transform: translateX(100%);  /* 移动到元素右侧，完成扫光效果 */
+}
+
+/* 暗色模式欢迎消息样式 - 适应暗色主题的特殊样式调整 */
+:root.dark .welcome-message {
+  background: linear-gradient(135deg, rgba(31, 41, 55, 0.8), rgba(17, 24, 39, 0.9));  /* 深色渐变背景 */
+  border-color: rgba(79, 70, 229, 0.2);  /* 边框颜色调整，增加可见度 */
+  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.3), 0 10px 20px -8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(79, 70, 229, 0.1);  /* 增强阴影效果 */
+  backdrop-filter: blur(12px);   /* 增强背景模糊效果，提高深度感 */
+}
+
+/* 暗色模式选项样式 - 调整选项在暗色主题下的视觉效果 */
+:root.dark .welcome-message .message-bubble li {
+  background: rgba(129, 140, 248, 0.12);  /* 调整背景透明度和颜色，适应暗色主题 */
+  box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.2);  /* 调整阴影效果，增强在暗色背景上的可见度 */
+}
+
+/* 暗色模式选项悬停效果 - 调整选项在暗色主题下悬停时的视觉反馈 */
+:root.dark .welcome-message .message-bubble li:hover {
+  background: rgba(129, 140, 248, 0.18);  /* 加深背景色 */
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.3);  /* 增强阴影效果 */
+  border-color: rgba(129, 140, 248, 0.35);  /* 加深边框颜色 */
+}
+
+:root.dark .message-bubble {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+:root.dark .user-message .message-bubble {
   background-color: var(--primary-color);
   color: white;
-  border-top-right-radius: 0.25rem;
-  margin-right: 0.5rem;
-  margin-left: auto;
 }
-
-.assistant-message {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: flex-start;
-  margin-right: auto;
-  width: 100%;
+.img-w-5.h-5 {
+  width: 5rem;
+  height: 5rem;
 }
-
-.message-bubble {
-  max-width: 70%;
-  padding: 1rem 1.25rem;
-  border-radius: 1.25rem;
-  background-color: var(--bg-primary);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  margin: 0;
-  word-break: break-word;
-  line-height: 1.6;
-  font-size: 0.95rem;
-  display: inline-block;
-}
-
-.assistant-message .message-bubble {
-  background-color: var(--bg-secondary);
-  border-top-left-radius: 0.25rem;
-  margin-left: 0.5rem;
-}
-
-.avatar {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
-  margin-top: 10px;
-}
-
-.user-message .avatar {
-  margin-left: 0.5rem;
-  margin-right: 0;
-  order: 1; /* 确保头像显示在最右侧 */
-}
-
-.assistant-message .avatar {
-  order: -1;
+/* 对话列表标题截断样式 - 确保过长的标题能够自动截断并显示省略号 */
+.truncate {
+  white-space: nowrap;         /* 防止文本换行 */
+  overflow: hidden;            /* 隐藏溢出内容 */
+  text-overflow: ellipsis;     /* 显示省略号 */
+  max-width: 100%;             /* 最大宽度限制 */
+  display: block;              /* 块级显示 */
 }

@@ -1,4 +1,4 @@
-# Life Coach AI助手部署指南
+# Life Compass部署指南
 
 ## 1. 环境要求
 
@@ -26,7 +26,7 @@ npm run build
 ### 2.2 部署到服务器
 1. 将构建后的`dist`目录内容上传到服务器
 ```bash
-scp -r dist/* user@your-server:/var/www/life-coach/
+scp -r dist/* user@your-server:/var/www/life-compass/
 ```
 
 2. Nginx配置示例
@@ -34,7 +34,7 @@ scp -r dist/* user@your-server:/var/www/life-coach/
 server {
     listen 80;
     server_name your-domain.com;
-    root /var/www/life-coach;
+    root /var/www/life-compass;
     index index.html;
 
     location / {
@@ -58,8 +58,8 @@ server {
 ### 3.1 准备后端代码
 ```bash
 # 在服务器上
-mkdir -p /var/www/life-coach-backend
-cd /var/www/life-coach-backend
+mkdir -p /var/www/life-compass-backend
+cd /var/www/life-compass-backend
 
 # 克隆代码或上传后端代码到服务器
 git clone <repository-url> .
@@ -71,7 +71,7 @@ npm install --production
 ### 3.2 环境变量配置
 1. 创建`.env`文件
 ```bash
-DEEPSEEK_API_KEY=your_api_key
+ARK_API_KEY=your_api_key
 PORT=3000
 NODE_ENV=production
 ```
@@ -82,7 +82,7 @@ NODE_ENV=production
 npm install -g pm2
 
 # 启动服务
-pm2 start src/server.js --name "life-coach-backend"
+pm2 start src/server.js --name "life-compass-backend"
 
 # 设置开机自启
 pm2 startup
@@ -104,7 +104,7 @@ sudo certbot --nginx -d your-domain.com
 ### 5.1 日志管理
 ```bash
 # 查看PM2日志
-pm2 logs life-coach-backend
+pm2 logs life-compass-backend
 
 # 查看Nginx访问日志
 tail -f /var/log/nginx/access.log
@@ -138,7 +138,7 @@ git pull
 npm install --production
 
 # 重启后端服务
-pm2 restart life-coach-backend
+pm2 restart life-compass-backend
 
 # 重载Nginx配置
 sudo nginx -t && sudo systemctl reload nginx
@@ -162,8 +162,8 @@ npm audit fix
 
 3. 设置文件权限
 ```bash
-chmod -R 755 /var/www/life-coach
-chown -R www-data:www-data /var/www/life-coach
+chmod -R 755 /var/www/life-compass
+chown -R www-data:www-data /var/www/life-compass
 ```
 
 ## 7. 故障排除

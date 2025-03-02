@@ -27,6 +27,16 @@ class ApiClient {
   async streamWithRetry(url, options, onData, onError, retryCount = 0) {
     try {
       const response = await this.fetchWithRetry(url, options);
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch (e) {
+          errorData = { error: { message: errorText } };
+        }
+        throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`);
+      }
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
 

@@ -40,12 +40,17 @@ function calculateTokens(text) {
 
 // 加载环境变量
 // 这里使用dotenv来管理敏感配置信息
-dotenv.config();
+// 使用绝对路径加载.env文件
+import path from 'path';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 // 创建Express应用实例
 // 这里设置默认端口为8080
 const app = express();
-const port = 8080;
+const port = process.env.PORT || 8080;
 
 // 启用中间件
 // 这里启用CORS支持跨域请求，使用express.json()解析JSON请求体
@@ -65,7 +70,7 @@ if (!API_KEY) {
 }
 
 // 处理聊天请求的路由
-// 这里实现了与DeepSeek API的集成和流式响应处理
+// 这里实现了与Life Compass API的集成和流式响应处理
 app.post('/api/chat', async (req, res) => {
   try {
     const { messages } = req.body;
@@ -89,7 +94,7 @@ app.post('/api/chat', async (req, res) => {
     const requestBody = {
       model: 'deepseek-r1-250120',
       messages: [
-        { role: 'system', content: '你是一位专业的Life Coach，擅长通过对话帮助他人发现自身潜力，解决生活和工作中的困扰。你会以同理心倾听，提出有见地的问题，给出实用的建议，帮助对方制定可行的行动计划。' },
+        { role: 'system', content: '你是一位专业的Life Compass助手，擅长通过对话帮助他人发现自身潜力，解决生活和工作中的困扰。你会以同理心倾听，提出有见地的问题，给出实用的建议，帮助对方制定可行的行动计划。' },
         ...messages.map(msg => ({
           role: msg.role,
           content: msg.content
@@ -196,7 +201,7 @@ app.post('/api/chat', async (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     status: 'ok',
-    message: 'Life Coach AI 助手后端服务运行正常',
+    message: 'Life Compass后端服务运行正常',
     version: '0.0.1'
   });
 });

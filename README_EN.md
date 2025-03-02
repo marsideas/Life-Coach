@@ -1,7 +1,7 @@
-# Life Coach AI Assistant
+# Life Compass
 
 ## Project Goal
-Create an intelligent Life Coach website based on DeepSeek R1 API, providing personal growth advice and guidance through AI conversations.
+Create an intelligent Life Compass website based on DeepSeek R1 API, providing personal growth advice and guidance through AI conversations.
 
 ## Technology Stack
 - Frontend: React + Vite
@@ -91,6 +91,9 @@ graph TD
 
 3. Optimization and Testing
    - [ ] UI/UX Improvements
+     - [✓] Update application name to Life Compass
+     - [✓] Update AI avatar
+     - [✓] Change conversation list from numbered format to brief chat content summaries
      - [ ] Optimize responsive layout
      - [ ] Improve interaction animations
      - [ ] Enhance error notifications

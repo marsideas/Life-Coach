@@ -2,7 +2,7 @@
 // 使用localStorage存储聊天记录
 
 // 存储消息的键名前缀
-const STORAGE_KEY_PREFIX = 'life_coach_chat_';
+const STORAGE_KEY_PREFIX = 'life_compass_chat_';
 
 // 获取指定对话的消息
 export const getStoredMessages = (chatId = null) => {
